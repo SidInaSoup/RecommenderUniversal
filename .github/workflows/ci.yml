@@ -35,9 +35,15 @@ jobs:
         run: mypy recommender_universal
 
       - name: 🧪 Run Tests with Pytest
-        run: pytest
+        run: |
+          python -m pytest tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
       - name: 📊 Generate Coverage Report
         run: |
-          coverage run -m pytest
+          coverage run --source=recommender_universal -m pytest
           coverage report
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
