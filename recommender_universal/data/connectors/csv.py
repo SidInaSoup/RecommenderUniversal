@@ -1,10 +1,11 @@
 import pandas as pd
 from pathlib import Path
 from .base import BaseConnector
+from typing import Union
 
 
 class CSVConnector(BaseConnector):
-    def __init__(self, path: str | Path, **kwargs):
+    def __init__(self, path: Union[str, Path], **kwargs: object) -> None:
         """
         Initialize the CSVConnector.
 
