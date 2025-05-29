@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black flake8 mypy pytest coverage
+
+      - name: 🎨 Run Black (code formatter)
+        run: black --check .
+
+      - name: 🔍 Run Flake8 (style linter)
+        run: flake8
+
+      - name: 🧠 Run Mypy (type checker)
+        run: mypy mylib/
+
+      - name: 🧪 Run Tests with Pytest
+        run: pytest
+
+      - name: 📊 Generate Coverage Report
+        run: |
+          coverage run -m pytest
+          coverage report
