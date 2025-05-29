@@ -32,7 +32,7 @@ jobs:
         run: flake8
 
       - name: 🧠 Run Mypy (type checker)
-        run: mypy mylib/
+        run: mypy RecommenderUniversal/
 
       - name: 🧪 Run Tests with Pytest
         run: pytest
