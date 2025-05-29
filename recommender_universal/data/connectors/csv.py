@@ -5,14 +5,16 @@ from typing import Union
 
 
 class CSVConnector(BaseConnector):
-    def __init__(self, path: Union[str, Path], **kwargs: object) -> None:
+    def __init__(
+        self, path: Union[str, Path], cache: bool = True, **kwargs: object
+    ) -> None:
         """
         Initialize the CSVConnector.
 
         :param path: Path to the CSV file.
         :param kwargs: Additional keyword arguments for pandas read_csv.
         """
-        super().__init__(**kwargs)
+        super().__init__(cache=cache)
         self.path = Path(path)
         self.read_kwargs = kwargs
 
