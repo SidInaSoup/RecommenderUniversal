@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-from typing import TypeVar
+from typing import TypeVar, Generic
 
 T = TypeVar("T", bound="BaseTransform")
 
 
-class BaseTransform(ABC):
+class BaseTransform(ABC, Generic[T]):
     """
     Abstract base class for all transforms.
     """
