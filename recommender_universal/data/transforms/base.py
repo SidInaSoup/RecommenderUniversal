@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from typing import TypeVar
+
+T = TypeVar("T", bound="BaseTransform")
 
 
 class BaseTransform(ABC):
@@ -8,7 +11,7 @@ class BaseTransform(ABC):
     """
 
     @abstractmethod
-    def fit(self, df: pd.DataFrame) -> None:
+    def fit(self, df: pd.DataFrame) -> T:
         """
         Fit the transform to the data.
 
