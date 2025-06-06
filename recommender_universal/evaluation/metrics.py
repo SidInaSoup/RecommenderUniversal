@@ -1,8 +1,13 @@
 import pandas as pd
+from typing import Protocol
+
+
+class RecommenderProtocol(Protocol):
+    def recommend(self, user_id: int, k: int) -> list[int]: ...
 
 
 def hit_rate_at_k(
-    model,
+    model: RecommenderProtocol,
     test_df: pd.DataFrame,
     user_column: str,
     item_column: str,
