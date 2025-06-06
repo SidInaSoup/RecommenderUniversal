@@ -1,4 +1,4 @@
-#!/home/siddarth/general/RecommenderUniversal/libenv/bin/python3
+#!/home/siddarth/general/RecommenderUniversal/libenv/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys
