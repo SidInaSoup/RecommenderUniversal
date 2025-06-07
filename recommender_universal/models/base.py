@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from typing import Generic, TypeVar, List
+
+T = TypeVar("T")
 
 
-class BaseRecommender(ABC):
+class BaseRecommender(ABC, Generic[T]):
     @abstractmethod
     def fit(self, df: pd.DataFrame) -> "BaseRecommender":
         pass
 
     @abstractmethod
-    def recommend(self, user_id: int, k: int = 5) -> list[int]:
+    def recommend(self, user_id: int, k: int = 5) -> List[T]:
         """
         Recommend k items for a given user.
 

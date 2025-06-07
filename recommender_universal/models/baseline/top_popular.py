@@ -1,8 +1,10 @@
 import pandas as pd
 from collections import Counter
 from recommender_universal.models.base import BaseRecommender
+from recommender_universal.models.registry import register
 
 
+@register("top_popular")
 class TopPopularRecommender(BaseRecommender):
 
     def __init__(self, item_column: str = "item_id") -> None:
