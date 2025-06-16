@@ -3,6 +3,9 @@ import pandas as pd
 from typing import Dict, Optional, List
 from recommender_universal.models.base import BaseRecommender
 from recommender_universal.models.registry import register
+from recommender_universal.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @register("mf")
@@ -41,6 +44,12 @@ class MatrixFactorization(BaseRecommender):
         self.user_factors = np.random.normal(0, 0.1, (num_users, self.factors))
         self.item_factors = np.random.normal(0, 0.1, (num_items, self.factors))
 
+        logger.info(
+            "Training MatrixFactorization for %d epochs on %d rows",
+            self.epochs,
+            len(df),
+        )
+
         for _ in range(self.epochs):
             for _, row in df.iterrows():
                 u_id = self.user_map[row[self.user_col]]
@@ -63,6 +72,8 @@ class MatrixFactorization(BaseRecommender):
 
         u_idx = self.user_map[user_id]
         assert self.user_factors is not None and self.item_factors is not None
+
+        logger.info("Generating recommendations for user_id=%s", user_id)
 
         scores = np.dot(self.user_factors[u_idx], self.item_factors.T)
         top_indices = np.argsort(scores)[::-1][:k]

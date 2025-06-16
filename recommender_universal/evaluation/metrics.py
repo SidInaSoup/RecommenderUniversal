@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Protocol
+from typing import Protocol, List, Set
 
 
 class RecommenderProtocol(Protocol):
@@ -28,3 +28,15 @@ def hit_rate_at_k(
         total += 1
 
     return hits / total if total else 0.0
+
+
+def precision_at_k(recommended: List[int], relevant: Set[int], k: int) -> float:
+    if k == 0:
+        return 0.0
+    return len(set(recommended[:k]) & relevant) / k
+
+
+def recall_at_k(recommended: List[int], relevant: Set[int], k: int) -> float:
+    if not relevant:
+        return 0.0
+    return len(set(recommended[:k]) & relevant) / len(relevant)

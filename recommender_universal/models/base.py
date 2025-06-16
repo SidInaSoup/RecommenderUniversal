@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
 import pandas as pd
+import pickle
+from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, List
+from pathlib import Path  # noqa: F401
 
 T = TypeVar("T")
 
@@ -23,3 +25,17 @@ class BaseRecommender(ABC, Generic[T]):
 
     def evaluate(self, test_df: pd.DataFrame) -> float:
         raise NotImplementedError("Evaluation not implemented")
+
+    def save(self, path: str) -> None:
+        """
+        Save the model state to a file using pickle.
+        """
+        with open(path, "wb") as f:
+            pickle.dump(self.__dict__, f)
+
+    def load(self, path: str) -> None:
+        """
+        Load the model state from a pickle file.
+        """
+        with open(path, "rb") as f:
+            self.__dict__.update(pickle.load(f))
