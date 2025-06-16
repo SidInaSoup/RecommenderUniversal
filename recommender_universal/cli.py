@@ -1,13 +1,15 @@
 import argparse
 import pandas as pd
-import joblib
 
-from recommender_universal.models.registry import load_model
+from recommender_universal.models.registry import load_model as instantiate_model
+from recommender_universal.models.base import BaseRecommender
 
 
 def train_main():
-    parser = argparse.ArgumentParser(description="Train a recommender model")
-    parser.add_argument("--model", required=True, help="Model name to train")
+    parser = argparse.ArgumentParser(description="Train a recommendation model.")
+    parser.add_argument(
+        "--model", required=True, help="Model name (e.g., top_popular, mf)"
+    )
     parser.add_argument("--input", required=True, help="Path to input CSV file")
     parser.add_argument("--save-path", required=True, help="Path to save trained model")
     parser.add_argument("--user-col", default="user_id")
@@ -17,10 +19,9 @@ def train_main():
     parser.add_argument("--epochs", type=int, default=10)
 
     args = parser.parse_args()
-
     df = pd.read_csv(args.input)
 
-    model = load_model(
+    model: BaseRecommender = instantiate_model(
         args.model,
         user_col=args.user_col,
         item_col=args.item_col,
@@ -35,6 +36,9 @@ def train_main():
 
 def predict_main():
     parser = argparse.ArgumentParser(description="Generate recommendations for a user.")
+    parser.add_argument(
+        "--model", required=True, help="Model name (e.g., top_popular, mf)"
+    )
     parser.add_argument("--model-path", required=True, help="Path to saved model file")
     parser.add_argument(
         "--user-id", required=True, type=int, help="User ID to recommend for"
@@ -43,6 +47,15 @@ def predict_main():
 
     args = parser.parse_args()
 
-    model = joblib.load(args.model_path)
+    # Re-instantiate the right model class from the registry,
+    # using dummy constructor args if necessary (we only need self.__dict__)
+    model: BaseRecommender = instantiate_model(args.model)
+    # Load the saved state (handles both old dict‐pickle and new full‐pickle)
+    model.load(args.model_path)
+
     recs = model.recommend(user_id=args.user_id, k=args.top_k)
     print(f"✅ Top {args.top_k} recommendations for user {args.user_id}: {recs}")
+
+
+if __name__ == "__main__":
+    train_main()

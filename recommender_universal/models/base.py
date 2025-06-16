@@ -28,14 +28,23 @@ class BaseRecommender(ABC, Generic[T]):
 
     def save(self, path: str) -> None:
         """
-        Save the model state to a file using pickle.
+        Save the model instance to a file using pickle.
         """
         with open(path, "wb") as f:
-            pickle.dump(self.__dict__, f)
+            pickle.dump(self, f)
 
     def load(self, path: str) -> None:
         """
-        Load the model state from a pickle file.
+        Load the model instance from a pickle file.
+        Also loads dict dumps of model
         """
         with open(path, "rb") as f:
-            self.__dict__.update(pickle.load(f))
+            loaded = pickle.load(f)
+
+        if isinstance(loaded, dict):
+            self.__dict__.update(loaded)
+
+        elif hasattr(loaded, "__dict__"):
+            self.__dict__.update(loaded.__dict__)
+        else:
+            raise ValueError(f"Unexpected data type in load(): {type(loaded)}")
