@@ -5,7 +5,7 @@ from recommender_universal.models.registry import load_model as instantiate_mode
 from recommender_universal.models.base import BaseRecommender
 
 
-def train_main():
+def train_main() -> None:
     parser = argparse.ArgumentParser(description="Train a recommendation model.")
     parser.add_argument(
         "--model", required=True, help="Model name (e.g., top_popular, mf)"
@@ -34,7 +34,7 @@ def train_main():
     print(f"✅ Model saved to {args.save_path}")
 
 
-def predict_main():
+def predict_main() -> None:
     parser = argparse.ArgumentParser(description="Generate recommendations for a user.")
     parser.add_argument(
         "--model", required=True, help="Model name (e.g., top_popular, mf)"
