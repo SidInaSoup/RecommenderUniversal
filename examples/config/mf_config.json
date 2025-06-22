@@ -1,0 +1,10 @@
+{
+    "model": "mf",
+    "params": {
+        "user_col": "user_id",
+        "item_col": "item_id",
+        "rating_col": "rating",
+        "factors": 5,
+        "epochs": 15
+    }
+}

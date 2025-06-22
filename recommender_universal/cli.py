@@ -1,7 +1,10 @@
 import argparse
 import pandas as pd
 
-from recommender_universal.models.registry import load_model as instantiate_model
+from recommender_universal.models.registry import (
+    load_model as instantiate_model,
+    load_model_from_json,
+)
 from recommender_universal.models.base import BaseRecommender
 
 
@@ -55,6 +58,19 @@ def predict_main() -> None:
 
     recs = model.recommend(user_id=args.user_id, k=args.top_k)
     print(f"✅ Top {args.top_k} recommendations for user {args.user_id}: {recs}")
+
+
+def config_main() -> None:
+    parser = argparse.ArgumentParser(description="Run a model from JSON config.")
+    parser.add_argument("--config", required=True, help="Path to JSON config file")
+    parser.add_argument("--input", required=True, help="Path to CSV for training")
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.input)
+    # Load model & params
+    model: BaseRecommender = load_model_from_json(args.config)
+    model.fit(df)
+    print("✅ Model trained via config.")
 
 
 if __name__ == "__main__":

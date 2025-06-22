@@ -20,4 +20,4 @@ dev = ["pytest", "black", "mypy", "flake8", "coverage"]
 [project.scripts]
 recommender-train = "recommender_universal.cli:train_main"
 recommender-predict = "recommender_universal.cli:predict_main"
-
+recommender-config = "recommender_universal.cli:config_main"
