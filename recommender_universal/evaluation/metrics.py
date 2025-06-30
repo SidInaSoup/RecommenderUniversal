@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd  # noqa: F401
 from typing import List, Set, Callable, Protocol  # noqa: F401
 import math
 
@@ -71,23 +71,3 @@ def ndcg_at_k(recommended: list, relevant: set, k: int) -> float:
 
     ideal_dcg = sum(1 / math.log2(i + 2) for i in range(min(len(relevant), k)))
     return dcg / ideal_dcg if ideal_dcg > 0 else 0.0
-
-
-def evaluate_batch(
-    df: pd.DataFrame,
-    model,
-    k: int,
-    metric_fn: Callable[[List[int], Set[int], int], float],
-    user_col: str,
-    item_col: str,
-) -> float:
-    """
-    Applies a raw metric_fn for each user in df and returns the average score.
-    """
-    users = df[user_col].unique()
-    scores = []
-    for user in users:
-        user_items = set(df[df[user_col] == user][item_col])
-        recs = model.recommend(user, k)
-        scores.append(metric_fn(recs, user_items, k))
-    return sum(scores) / len(scores) if scores else 0.0

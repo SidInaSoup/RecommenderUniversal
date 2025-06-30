@@ -6,6 +6,8 @@ from recommender_universal.evaluation.metrics import (
     hit_rate_at_k,
     average_precision_at_k,
     ndcg_at_k,
+)
+from recommender_universal.evaluation.batch_eval import (
     evaluate_batch,
 )
 
