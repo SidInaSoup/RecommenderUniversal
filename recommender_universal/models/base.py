@@ -1,7 +1,11 @@
 import pandas as pd
-import pickle
+import joblib
+import dill
+import json
+import os  # noqa: F401
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Dict, Any
 from pathlib import Path  # noqa: F401
 
 T = TypeVar("T")
@@ -26,25 +30,95 @@ class BaseRecommender(ABC, Generic[T]):
     def evaluate(self, test_df: pd.DataFrame) -> float:
         raise NotImplementedError("Evaluation not implemented")
 
-    def save(self, path: str) -> None:
+    def save(
+        self,
+        base_dir: str,
+        model_name: str,
+        config: Dict[str, Any] = None,
+        use_joblib: bool = True,
+        use_dill: bool = False,
+    ) -> None:
         """
-        Save the model instance to a file using pickle.
+        Save model with versioning and metadata.
+        :param base_dir: str, base directory to save the model.
+        :param model_name: str, name under which to save (e.g. "mf")
+        :param config: dict, dict of constructor params.
         """
-        with open(path, "wb") as f:
-            pickle.dump(self, f)
+        root = Path(base_dir) / model_name
+        root.mkdir(parents=True, exist_ok=True)
 
-    def load(self, path: str) -> None:
-        """
-        Load the model instance from a pickle file.
-        Also loads dict dumps of model
-        """
-        with open(path, "rb") as f:
-            loaded = pickle.load(f)
+        # Determine next version
+        existing = [
+            p.name for p in root.iterdir() if p.is_dir() and p.name.startswith("v")
+        ]
+        versions = sorted(int(v[1:]) for v in existing if v[1:].isdigit())
+        next_version = versions[-1] + 1 if versions else 1
+        version_dir = root / f"v{next_version}"
+        version_dir.mkdir()
 
-        if isinstance(loaded, dict):
-            self.__dict__.update(loaded)
-
-        elif hasattr(loaded, "__dict__"):
-            self.__dict__.update(loaded.__dict__)
+        # Save model binary
+        model_path = version_dir / ("model.dill" if use_dill else "model.joblib")
+        if use_dill:
+            with open(model_path, "wb") as f:
+                dill.dump(self, f)
         else:
-            raise ValueError(f"Unexpected data type in load(): {type(loaded)}")
+            joblib.dump(self, model_path)
+
+        # Save metadata & config
+        meta = {
+            "model_name": model_name,
+            "version": next_version,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "config": config,
+        }
+        with open(version_dir / "config.json", "w") as f:
+            json.dump(meta, f, indent=2)
+
+        print(f"✅ Saved {model_name} v{next_version} to {version_dir}")
+
+    @classmethod
+    def load(
+        cls,
+        base_dir: str,
+        model_name: str,
+        version: int = None,
+        use_dill: bool = False,
+    ) -> "BaseRecommender":
+        """
+        Load a model instance by name and version. If version=None, load latest.
+        :param base_dir: str, base directory where models are saved.
+        :param model_name: str, name of the model to load (e.g. "mf").
+        :param version: int, specific version to load, or None for latest.
+        :param use_dill: bool, whether to use dill for loading
+                         (default False, otherwise joblib).
+        :return: An instance of the model class.
+        :raises FileNotFoundError: If the model or version does not exist.
+        """
+        root = Path(base_dir) / model_name
+        if not root.exists():
+            raise FileNotFoundError(f"No saved versions for model '{model_name}'")
+
+        # Pick version
+        dirs = sorted(
+            [d for d in root.iterdir() if d.is_dir() and d.name.startswith("v")],
+            key=lambda p: int(p.name[1:]),
+        )
+        if not dirs:
+            raise FileNotFoundError(f"No versions found under {root}")
+        if version is None:
+            version_dir = dirs[-1]
+        else:
+            version_dir = root / f"v{version}"
+            if not version_dir.exists():
+                raise FileNotFoundError(
+                    f"Version v{version} not found for '{model_name}'"
+                )
+
+        model_path = version_dir / ("model.dill" if use_dill else "model.joblib")
+        if use_dill:
+            with open(model_path, "rb") as f:
+                instance = dill.load(f)
+        else:
+            instance = joblib.load(model_path)
+
+        return instance
