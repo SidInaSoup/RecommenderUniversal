@@ -33,7 +33,7 @@ def train_main() -> None:
         epochs=args.epochs,
     )
     model.fit(df)
-    model.save(args.save_path)
+    model.save(args.save_path, model_name=args.model)
     print(f"✅ Model saved to {args.save_path}")
 
 
@@ -54,7 +54,7 @@ def predict_main() -> None:
     # using dummy constructor args if necessary (we only need self.__dict__)
     model: BaseRecommender = instantiate_model(args.model)
     # Load the saved state (handles both old dict‐pickle and new full‐pickle)
-    model.load(args.model_path)
+    model.load(args.model_path, model_name=args.model)
 
     recs = model.recommend(user_id=args.user_id, k=args.top_k)
     print(f"✅ Top {args.top_k} recommendations for user {args.user_id}: {recs}")
