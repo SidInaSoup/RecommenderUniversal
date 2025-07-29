@@ -1,13 +1,14 @@
 import s3fs
 from .base import BaseConnector
 import pandas as pd
+from typing import Any
 
 
 # pandas on HTTP/S3 auto-detects s3fs if installed,
 # so you may not need a dedicated S3Connector.
 # But if you want custom handling:
 class S3Connector(BaseConnector):
-    def _read(self, uri: str, **kwargs) -> pd.DataFrame:
+    def _read(self, uri: str, **kwargs: Any) -> pd.DataFrame:
         # e.g. "s3://bucket/path/file.csv"
         fs = s3fs.S3FileSystem(anon=False)
         with fs.open(uri, "rb") as f:

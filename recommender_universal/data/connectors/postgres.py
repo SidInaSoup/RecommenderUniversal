@@ -1,11 +1,13 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from .base import BaseConnector
-from typing import Any
+from typing import Any, Optional
 
 
 class PostgresConnector(BaseConnector):
-    def _read(self, uri: str, query: str, **kwargs: Any) -> pd.DataFrame:
+    def _read(
+        self, uri: str, query: Optional[str] = None, **kwargs: Any
+    ) -> pd.DataFrame:
         engine = create_engine(uri)
         df = pd.read_sql(query, engine, **kwargs)
         self._df = df
