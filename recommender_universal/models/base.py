@@ -5,7 +5,7 @@ import json
 import os  # noqa: F401
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, List, Dict, Any
+from typing import Generic, TypeVar, List, Dict, Any, Optional
 from pathlib import Path  # noqa: F401
 
 T = TypeVar("T")
@@ -34,7 +34,7 @@ class BaseRecommender(ABC, Generic[T]):
         self,
         base_dir: str,
         model_name: str,
-        config: Dict[str, Any] = None,
+        config: Optional[Dict[str, Any]] = None,
         use_joblib: bool = True,
         use_dill: bool = False,
     ) -> None:
@@ -81,7 +81,7 @@ class BaseRecommender(ABC, Generic[T]):
         cls,
         base_dir: str,
         model_name: str,
-        version: int = None,
+        version: Optional[int] = None,
         use_dill: bool = False,
     ) -> "BaseRecommender":
         """

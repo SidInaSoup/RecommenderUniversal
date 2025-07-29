@@ -3,7 +3,7 @@ from .base import BaseConnector
 
 
 class ParquetConnector(BaseConnector):
-    def load(self, uri: str, **kwargs) -> pd.DataFrame:
+    def _read(self, uri: str, **kwargs) -> pd.DataFrame:
         df = pd.read_parquet(uri, **kwargs)
         self._df = df
         return df

@@ -1,9 +1,12 @@
 import pandas as pd
 from .base import BaseConnector
+from typing import Optional, Any
 
 
 class JSONConnector(BaseConnector):
-    def load(self, uri: str, orient: str = None, **kwargs) -> pd.DataFrame:
+    def _read(
+        self, uri: str, orient: Optional[str] = None, **kwargs: Any
+    ) -> pd.DataFrame:
         df = pd.read_json(uri, orient=orient, **kwargs)
         self._df = df
         return df

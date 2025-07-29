@@ -10,14 +10,16 @@ class DataPipeline:
         self,
         connector: BaseConnector,
         schema: RatingSchema,
+        uri: str,
         transforms: Optional[Sequence[BaseTransform]] = None,
     ) -> None:
         self.connector = connector
         self.schema = schema
+        self.uri = uri
         self.transforms = transforms or []
 
     def run(self, validate: bool = True, fit: bool = True) -> pd.DataFrame:
-        df = self.connector.load()
+        df = self.connector.load(uri=self.uri)
 
         if validate:
             self.schema.validate(df)

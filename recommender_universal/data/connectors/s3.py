@@ -7,7 +7,7 @@ import pandas as pd
 # so you may not need a dedicated S3Connector.
 # But if you want custom handling:
 class S3Connector(BaseConnector):
-    def load(self, uri: str, **kwargs):
+    def _read(self, uri: str, **kwargs) -> pd.DataFrame:
         # e.g. "s3://bucket/path/file.csv"
         fs = s3fs.S3FileSystem(anon=False)
         with fs.open(uri, "rb") as f:

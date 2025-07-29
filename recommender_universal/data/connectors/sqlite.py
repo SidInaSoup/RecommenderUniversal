@@ -1,11 +1,16 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from .base import BaseConnector
+from typing import Any, Optional
 
 
 class SQLiteConnector(BaseConnector):
-    def load(
-        self, uri: str, table_name: str = None, query: str = None, **kwargs
+    def _read(
+        self,
+        uri: str,
+        table_name: Optional[str] = None,
+        query: Optional[str] = None,
+        **kwargs: Any,
     ) -> pd.DataFrame:
         engine = create_engine(uri)
         if query:

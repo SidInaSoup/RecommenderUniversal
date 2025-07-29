@@ -1,5 +1,6 @@
 import pandas as pd
 from .base import BaseConnector
+from typing import Any
 
 
 class CSVConnector(BaseConnector):
@@ -8,7 +9,7 @@ class CSVConnector(BaseConnector):
     '.csv' extensions and the 'csv://' URI scheme.
     """
 
-    def _read(self, uri: str, **kwargs) -> pd.DataFrame:
+    def _read(self, uri: str, **kwargs: Any) -> pd.DataFrame:
         """
         Load DataFrame from the given URI (local path or URL).
         `kwargs` are passed straight through to pandas.read_csv.

@@ -1,10 +1,11 @@
 from fastavro import reader
 import pandas as pd
 from .base import BaseConnector
+from typing import Any
 
 
 class AvroConnector(BaseConnector):
-    def load(self, uri: str, **kwargs) -> pd.DataFrame:
+    def _read(self, uri: str, **kwargs: Any) -> pd.DataFrame:
         with open(uri, "rb") as fo:
             avro_reader = reader(fo, **kwargs)
             records = [rec for rec in avro_reader]
