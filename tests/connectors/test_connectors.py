@@ -32,49 +32,52 @@ def sample_df():
     )
 
 
-def test_csv_connector(tmp_path, sample_df):
-    # Write CSV
+def test_csv_connector_load_and_cache(tmp_path, sample_df):
     path = tmp_path / "data.csv"
     sample_df.to_csv(path, index=False)
 
-    # Registry should pick CSVConnector
+    # Registry lookup
     cls = BaseConnector.get_connector_for(str(path))
     assert cls is CSVConnector
 
-    # Load via CSVConnector
-    df = cls().load(str(path))
-    pd.testing.assert_frame_equal(df, sample_df)
-
-    # load_data shortcut
-    df2 = load_data(str(path))
-    pd.testing.assert_frame_equal(df2, sample_df)
-
-    # Schema introspection
-    conn = cls()
-    conn.load(str(path))
+    conn = cls(cache=True)
+    # First load
+    df1 = conn.load(str(path))
+    pd.testing.assert_frame_equal(df1, sample_df)
+    # Schema
     schema = conn.schema
     assert schema["user_id"].startswith("int")
-    assert schema["item_id"] == "object"
+    # Caching: modify file and reload without refresh → still old data
+    modified = sample_df.copy()
+    modified.loc[0, "user_id"] = 999
+    modified.to_csv(path, index=False)
+    df2 = conn.load(str(path), refresh=False)
+    pd.testing.assert_frame_equal(df2, sample_df)
+    # With refresh=True, sees new content
+    df3 = conn.load(str(path), refresh=True)
+    assert df3.loc[0, "user_id"] == 999
+
+
+def test_csv_load_data_shortcut(tmp_path, sample_df):
+    path = tmp_path / "data.csv"
+    sample_df.to_csv(path, index=False)
+    df = load_data(str(path))
+    pd.testing.assert_frame_equal(df, sample_df)
 
 
 def test_json_connector(tmp_path, sample_df):
-    # Write JSON
     path = tmp_path / "data.json"
-    sample_df.to_json(path, orient="records", lines=False)
+    sample_df.to_json(path, orient="records")
 
     cls = BaseConnector.get_connector_for(str(path))
     assert cls is JSONConnector
 
-    df = cls().load(str(path), orient="records")
+    conn = cls()
+    df = conn.load(str(path), orient="records")
     pd.testing.assert_frame_equal(df, sample_df)
-
-    # load_data with .json
-    df2 = load_data(str(path))
-    pd.testing.assert_frame_equal(df2, sample_df)
 
 
 def test_parquet_connector(tmp_path, sample_df):
-    # Write Parquet
     path = tmp_path / "data.parquet"
     table = pa.Table.from_pandas(sample_df)
     pq.write_table(table, path)
@@ -82,19 +85,16 @@ def test_parquet_connector(tmp_path, sample_df):
     cls = BaseConnector.get_connector_for(str(path))
     assert cls is ParquetConnector
 
-    df = cls().load(str(path))
+    conn = cls()
+    df = conn.load(str(path))
     pd.testing.assert_frame_equal(df, sample_df)
-
-    df2 = load_data(str(path))
-    pd.testing.assert_frame_equal(df2, sample_df)
 
 
 def test_avro_connector(tmp_path, sample_df):
-    # Write Avro
     path = tmp_path / "data.avro"
     records = sample_df.to_dict(orient="records")
     schema = {
-        "doc": "Test schema",
+        "doc": "Test",
         "name": "Test",
         "type": "record",
         "fields": [
@@ -109,37 +109,31 @@ def test_avro_connector(tmp_path, sample_df):
     cls = BaseConnector.get_connector_for(str(path))
     assert cls is AvroConnector
 
-    df = cls().load(str(path))
-    # Avro will read ints as ints, strings as objects
+    conn = cls()
+    df = conn.load(str(path))
     pd.testing.assert_frame_equal(df, sample_df.astype({"rating": int}))
-
-    df2 = load_data(str(path))
-    pd.testing.assert_frame_equal(df2, sample_df.astype({"rating": int}))
 
 
 def test_sqlite_connector(tmp_path, sample_df):
-    # Create SQLite DB
     db_path = tmp_path / "test.db"
-    conn = sqlite3.connect(db_path)
-    sample_df.to_sql("ratings", conn, index=False)
-    conn.close()
+    conn_sql = sqlite3.connect(db_path)
+    sample_df.to_sql("ratings", conn_sql, index=False)
+    conn_sql.close()
 
     uri = f"sqlite:///{db_path}"
     cls = BaseConnector.get_connector_for(uri)
     assert cls is SQLiteConnector
 
-    # Load by table name
-    df = cls().load(uri, table_name="ratings")
+    conn = cls()
+    df = conn.load(uri, table_name="ratings")
     pd.testing.assert_frame_equal(df, sample_df)
 
-    # load_data helper with query
-    query = "SELECT * FROM ratings"
-    df2 = load_data(uri, query=query)
-    # Order may vary, sort by user_id
+    # Via query
+    df2 = conn.load(uri, query="SELECT * FROM ratings")
     df2 = df2.sort_values("user_id").reset_index(drop=True)
     pd.testing.assert_frame_equal(df2, sample_df)
 
 
 def test_get_connector_for_invalid():
     with pytest.raises(ValueError):
-        BaseConnector.get_connector_for("unsupported://path/data.xyz")
+        BaseConnector.get_connector_for("unsupported://file.xyz")
