@@ -1,14 +1,20 @@
-import sqlite3
 import pandas as pd
+from sqlalchemy import create_engine
 from .base import BaseConnector
 
 
 class SQLiteConnector(BaseConnector):
-    def __init__(self, db_path: str, query: str):
-        super().__init__()
-        self.db_path = db_path
-        self.query = query
+    def load(
+        self, uri: str, table_name: str = None, query: str = None, **kwargs
+    ) -> pd.DataFrame:
+        engine = create_engine(uri)
+        if query:
+            df = pd.read_sql(query, engine, **kwargs)
+        else:
+            df = pd.read_sql_table(table_name, engine, **kwargs)
+        self._df = df
+        return df
 
-    def _read(self) -> pd.DataFrame:
-        with sqlite3.connect(self.db_path) as conn:
-            return pd.read_sql_query(self.query, conn)
+
+BaseConnector.register_connector("sqlite://", SQLiteConnector)
+BaseConnector.register_connector(".db", SQLiteConnector)

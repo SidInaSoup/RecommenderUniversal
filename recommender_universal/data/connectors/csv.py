@@ -1,22 +1,23 @@
 import pandas as pd
-from pathlib import Path
 from .base import BaseConnector
-from typing import Union
 
 
 class CSVConnector(BaseConnector):
-    def __init__(
-        self, path: Union[str, Path], cache: bool = True, **kwargs: object
-    ) -> None:
-        """
-        Initialize the CSVConnector.
+    """
+    Connector for CSV files, automatically registered for
+    '.csv' extensions and the 'csv://' URI scheme.
+    """
 
-        :param path: Path to the CSV file.
-        :param kwargs: Additional keyword arguments for pandas read_csv.
+    def _read(self, uri: str, **kwargs) -> pd.DataFrame:
         """
-        super().__init__(cache=cache)
-        self.path = Path(path)
-        self.read_kwargs = kwargs
+        Load DataFrame from the given URI (local path or URL).
+        `kwargs` are passed straight through to pandas.read_csv.
+        """
+        df = pd.read_csv(uri, **kwargs)
+        self._df = df  # for schema introspection
+        return df
 
-    def _read(self) -> pd.DataFrame:
-        return pd.read_csv(self.path, **self.read_kwargs)
+
+# Registering this connector under both file-extension and URI-scheme keys:
+BaseConnector.register_connector(".csv", CSVConnector)
+BaseConnector.register_connector("csv://", CSVConnector)
