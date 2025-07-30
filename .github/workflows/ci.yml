@@ -34,6 +34,11 @@ jobs:
       - name: 🧠 Run Mypy (type checker)
         run: mypy recommender_universal
 
+      - name: 🗃️ Clean Python cache
+        run: |
+          find . -type d -name "__pycache__" -exec rm -r {} +
+          find . -type f -name "*.pyc" -delete
+
       - name: 🧪 Run Tests with Pytest
         run: |
           python -m pytest tests
