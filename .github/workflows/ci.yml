@@ -41,6 +41,9 @@ jobs:
 
       - name: Debug test_connectors.py
         run: head -n 15 src/recommender-universal/tests/connectors/test_connectors.py
+      
+      - name: Confirm test_connectors.py is clean
+        run: grep boto3 src/recommender-universal/tests/connectors/test_connectors.py || echo "No boto3 found ✅"
 
 
       - name: 🧪 Run Tests with Pytest
