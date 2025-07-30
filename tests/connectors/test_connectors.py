@@ -1,13 +1,9 @@
-import json  # noqa: F401
 import sqlite3
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import fastavro
-import s3fs  # noqa: F401
 import pytest
-
-from pathlib import Path  # noqa: F401
 
 from recommender_universal.data.connectors.base import BaseConnector
 from recommender_universal.data.connectors.csv import CSVConnector
