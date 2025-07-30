@@ -4,7 +4,6 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import fastavro
-import boto3  # noqa: F401
 import s3fs  # noqa: F401
 import pytest
 
