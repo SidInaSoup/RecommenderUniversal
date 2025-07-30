@@ -39,6 +39,10 @@ jobs:
           find . -type d -name "__pycache__" -exec rm -r {} +
           find . -type f -name "*.pyc" -delete
 
+      - name: Debug test_connectors.py
+        run: head -n 15 src/recommender-universal/tests/connectors/test_connectors.py
+
+
       - name: 🧪 Run Tests with Pytest
         run: |
           python -m pytest tests
